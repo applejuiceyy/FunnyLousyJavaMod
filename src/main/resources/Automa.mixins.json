@@ -6,8 +6,15 @@
   "mixins": [
   ],
   "client": [
+    "BlockItemMixin",
+    "ClientPlayerEntityAccessor",
+    "ClientPlayerEntityMixin",
     "ClientPlayerInteractionManagerMixin",
+    "HandledScreenMixin",
+    "KeyboardInputMixin",
     "MinecraftClientMixin",
+    "MinecraftClientMixinAccessor",
+    "MouseMixin",
     "SlotAccessor"
   ],
   "injectors": {

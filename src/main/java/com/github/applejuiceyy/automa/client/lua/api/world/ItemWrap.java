@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.MiningToolItem;
+import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 
 public record ItemWrap(Item item) implements Wrapper<Item> {
@@ -22,6 +23,10 @@ public record ItemWrap(Item item) implements Wrapper<Item> {
         }
 
         return null;
+    }
+
+    public String id() {
+        return Registry.ITEM.getId(this.item).toString();
     }
 
     @Override

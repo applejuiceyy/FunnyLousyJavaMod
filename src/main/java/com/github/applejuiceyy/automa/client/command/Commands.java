@@ -11,6 +11,7 @@ public class Commands {
         LiteralArgumentBuilder<FabricClientCommandSource> arg = LiteralArgumentBuilder.literal("automation");
 
         arg.then(LoadScriptCommand.create());
+        arg.then(EvaluateCommand.create());
 
         dispatcher.register(arg);
     }

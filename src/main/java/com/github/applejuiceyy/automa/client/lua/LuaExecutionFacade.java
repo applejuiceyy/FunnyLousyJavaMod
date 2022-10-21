@@ -1,8 +1,15 @@
 package com.github.applejuiceyy.automa.client.lua;
 
 import com.github.applejuiceyy.automa.client.AutomaClient;
-import com.github.applejuiceyy.automa.client.lua.api.Inventory;
 import com.github.applejuiceyy.automa.client.lua.api.Player;
+import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControls;
+import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControlsLA;
+import com.github.applejuiceyy.automa.client.lua.api.controls.lookControls.LookControlsLA;
+import com.github.applejuiceyy.automa.client.lua.api.controls.movementControls.MovementControlsLA;
+import com.github.applejuiceyy.automa.client.lua.api.listener.CancellationState;
+import com.github.applejuiceyy.automa.client.lua.api.listener.Event;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import org.luaj.vm2.*;
 import org.luaj.vm2.compiler.LuaC;
 import org.luaj.vm2.lib.*;
@@ -17,23 +24,30 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
+import static com.github.applejuiceyy.automa.client.lua.api.Getter.getClient;
+
 public class LuaExecutionFacade {
-    Globals globals = new Globals();
-    Path dir;
-    public LuaBoundaryControl boundary;
+
+    public final Globals globals = new Globals();
+    public final Path dir;
+
+    public final LuaBoundaryControl boundary;
+    public final LuaExecutionDebugger stat;
 
     boolean executing = true;
 
-    public final LuaEvent tick;
-    public final LuaEvent attackItem;
-    public final LuaEvent useItem;
+    public final Event tick;
+    public final Event render;
+    public final Event attackItem;
+    public final Event useItem;
 
-    public final LuaEvent blockBreaking;
-    public final LuaEvent blockBreakingCancel;
-    public final LuaEvent brokeBlock;
+    public final Event blockBreaking;
+    public final Event blockBreakingCancel;
+    public final Event brokeBlock;
+    public final Event blockPlacing;
 
-    LuaValue coroutineManager;
-    LuaValue require = new Require(this);
+    public final LuaValue coroutineManager;
+    public final LuaValue require = new Require(this);
 
     public LuaExecutionFacade(Path dir) {
         this.dir = dir;
@@ -46,37 +60,52 @@ public class LuaExecutionFacade {
         globals.load(new DebugLib());
         globals.load(new CoroutineLib());
 
+        stat = new LuaExecutionDebugger(this);
+        globals.get("coroutine").set("create", stat.generateCustomCoroutineCreate());
+
         LuaC.install(globals);
 
         globals.set("require", require);
+        globals.set("print", new Print());
 
         coroutineManager = require.call("coroutine_manager");
 
         boundary = new LuaBoundaryControl(this);
         boundary.loadAllClasses();
 
-        tick = new LuaEvent(this);
-        useItem = new LuaEvent(this);
-        attackItem = new LuaEvent(this);
-        blockBreaking = new LuaEvent(this);
-        blockBreakingCancel = new LuaEvent(this);
-        brokeBlock = new LuaEvent(this);
+        tick = new Event(this);
+        render = new Event(this);
+        useItem = new Event(this);
+        attackItem = new Event(this);
+        blockBreaking = new Event(this);
+        blockBreakingCancel = new Event(this);
+        brokeBlock = new Event(this);
+        blockPlacing = new Event(this);
 
 
-        globals.set("tick", boundary.J2L(tick));
-        globals.set("useItem", boundary.J2L(useItem));
-        globals.set("attackItem", boundary.J2L(attackItem));
-        globals.set("blockBreaking", boundary.J2L(blockBreaking));
-        globals.set("blockBreakingCancel", boundary.J2L(blockBreakingCancel));
-        globals.set("brokeBlock", boundary.J2L(brokeBlock));
+        globals.set("tick", boundary.J2L(tick).arg1());
+        globals.set("render", boundary.J2L(render).arg1());
+        globals.set("useItem", boundary.J2L(useItem).arg1());
+        globals.set("attackItem", boundary.J2L(attackItem).arg1());
+        globals.set("blockBreaking", boundary.J2L(blockBreaking).arg1());
+        globals.set("blockBreakingCancel", boundary.J2L(blockBreakingCancel).arg1());
+        globals.set("brokeBlock", boundary.J2L(brokeBlock).arg1());
+        globals.set("blockPlacing", boundary.J2L(blockPlacing).arg1());
 
-        globals.set("inventory", boundary.J2L(new Inventory()));
-        globals.set("player", boundary.J2L(new Player()));
+        globals.set("player", boundary.J2L(new Player()).arg1());
+
+        globals.set("inventory", boundary.J2L(new InventoryControlsLA(this, AutomaClient.inventoryControls)).arg1());
+        globals.set("keyboard", boundary.J2L(new MovementControlsLA(this, AutomaClient.movementControls)).arg1());
+        globals.set("mouse", boundary.J2L(new LookControlsLA(this, AutomaClient.lookControls)).arg1());
 
 
-        new LuaExecutionStatistic(this);
+        new LuaExecutionDebugger(this);
 
         wrapCall(this::runBootstrap);
+    }
+
+    public String getName() {
+        return dir.getFileName().toString();
     }
 
     public void stop() {
@@ -132,26 +161,41 @@ public class LuaExecutionFacade {
         return new LuaThread(globals, value);
     }
 
-    public boolean wrapCall(Runnable calling) {
+    public boolean wrapCall(Runnable calling, boolean stopExecution) {
         try {
             calling.run();
             return true;
         }
         catch (Exception err) {
-            err.printStackTrace();
             stop();
+
+            if (getClient().player != null) {
+                getClient().player.sendMessage(Text.literal("[Automa] ").setStyle(Style.EMPTY.withColor(0xff4400)).append(Text.of(err.toString())));
+            }
+            else {
+                err.printStackTrace();
+            }
+
             return false;
         }
     }
 
-    public boolean performEvent(LuaEvent event) {
-        LuaEvent.CancellationState cancel = new LuaEvent.CancellationState();
-        boolean ran = wrapCall(() -> event.fire(LuaValue.varargsOf(new LuaValue[]{boundary.J2L(cancel)})));
+    public boolean wrapCall(Runnable calling) {
+        return wrapCall(calling, true);
+    }
 
+    public boolean performEvent(Event event) {
+        CancellationState cancel = new CancellationState();
+        boolean ran = performEventWith(event, boundary.J2L(cancel));
         return ran && cancel.isCancelled();
+    }
+
+    public boolean performEventWith(Event event, Varargs value) {
+        return wrapCall(() -> event.fire(value));
     }
 
     public void manageCoroutine(LuaValue value) {
         coroutineManager.call(value);
     }
+    public LuaThread createCoroutine(LuaValue func) { return stat.createCoroutine(func);}
 }

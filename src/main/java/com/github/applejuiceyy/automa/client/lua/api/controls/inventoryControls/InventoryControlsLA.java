@@ -1,11 +1,10 @@
-package com.github.applejuiceyy.automa.client.lua.api;
+package com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls;
 
+import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
+import com.github.applejuiceyy.automa.client.lua.api.controls.MissionCriticalLuaInterface;
 import com.github.applejuiceyy.automa.client.lua.api.world.ItemStackWrap;
 import com.github.applejuiceyy.automa.mixin.SlotAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.slot.Slot;
@@ -16,13 +15,32 @@ import static com.github.applejuiceyy.automa.client.lua.api.Getter.getInteractio
 import static com.github.applejuiceyy.automa.client.lua.api.Getter.getPlayer;
 
 @LuaConvertible
-public class Inventory {
+public class InventoryControlsLA extends MissionCriticalLuaInterface<InventoryControls> {
+    public InventoryControlsLA(LuaExecutionFacade f, InventoryControls obj) { super(f, obj); }
+
+    public void useItem() {
+        this.owner.usingItem = true;
+    }
+
+    public void stopUsingItem() {
+        this.owner.usingItem = false;
+    }
+
+    public void attackItem() {
+        this.owner.attackingItem = true;
+    }
+
+    public void stopAttackingItem() {
+        this.owner.attackingItem = false;
+    }
+
 
     public ItemStackWrap getStack(int number) {
         return new ItemStackWrap(getPlayer().getInventory().getStack(number));
     }
 
     public void swapStacks(int from, int to) {
+        checkControl();
         PlayerScreenHandler screen = getPlayer().playerScreenHandler;
 
         int fromSlot = -1;
@@ -50,14 +68,17 @@ public class Inventory {
 
 
     public void dropSelectedStack() {
+        checkControl();
         getPlayer().dropSelectedItem(false);
     }
 
     public void scroll(int idx) {
+        checkControl();
         getPlayer().getInventory().selectedSlot = normaliseSelectedSlot(getPlayer().getInventory().selectedSlot + idx);
     }
 
     public void setSlot(int idx) {
+        checkControl();
         getPlayer().getInventory().selectedSlot = normaliseSelectedSlot(idx);
     }
 

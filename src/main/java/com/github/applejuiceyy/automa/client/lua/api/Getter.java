@@ -6,13 +6,13 @@ import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.world.ClientWorld;
 
 public class Getter {
-    static MinecraftClient getClient() {
+    public static MinecraftClient getClient() {
         return MinecraftClient.getInstance();
     }
-    static ClientPlayerEntity getPlayer() {
+    public static ClientPlayerEntity getPlayer() {
         return getClient().player;
     }
-    static ClientPlayerInteractionManager getInteractionManager() {
+    public static ClientPlayerInteractionManager getInteractionManager() {
         return getClient().interactionManager;
     }
     static ClientWorld getWorld() {

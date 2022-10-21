@@ -2,9 +2,14 @@ package com.github.applejuiceyy.automa.client.lua;
 
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import com.github.applejuiceyy.automa.client.lua.annotation.Metatable;
-import com.github.applejuiceyy.automa.client.lua.api.Inventory;
 import com.github.applejuiceyy.automa.client.lua.api.Player;
 import com.github.applejuiceyy.automa.client.lua.api.Wrapper;
+import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControlsLA;
+import com.github.applejuiceyy.automa.client.lua.api.controls.lookControls.LookControlsLA;
+import com.github.applejuiceyy.automa.client.lua.api.controls.movementControls.MovementControlsLA;
+import com.github.applejuiceyy.automa.client.lua.api.listener.CancellationState;
+import com.github.applejuiceyy.automa.client.lua.api.listener.Event;
+import com.github.applejuiceyy.automa.client.lua.api.listener.Future;
 import com.github.applejuiceyy.automa.client.lua.api.world.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -27,9 +32,15 @@ public class LuaBoundaryControl {
     private final LuaExecutionFacade owner;
 
     static Class<?>[] loadClasses = {
-            LuaEvent.class,
-            LuaEvent.CancellationState.class,
-            Inventory.class,
+            Event.class,
+            Future.class,
+
+            MovementControlsLA.class,
+            InventoryControlsLA.class,
+            LookControlsLA.class,
+
+            CancellationState.class,
+
             Player.class,
 
             ItemStackWrap.class,
@@ -95,10 +106,11 @@ public class LuaBoundaryControl {
 
                 if (method.getName().equals("getInstanceFactory")) {
                     try {
-                        constructor = J2L(method.invoke(null, this.owner));
+                        constructor = J2L(method.invoke(null, this.owner)).arg1();
                     } catch (Exception e) {
                         LOGGER.error(String.format("Constructor factory of class %s failed", cls.getName()));
                     }
+                    continue;
                 }
 
                 if (method.isAnnotationPresent(Metatable.class)) {
@@ -125,7 +137,7 @@ public class LuaBoundaryControl {
                 LuaTable supermeta = buildClass(supercls);
                 metatable.setmetatable(supermeta);
                 LuaTable indexMeta = new LuaTable();
-                indexMeta.set("__index", supermeta.getmetatable().get("__index"));
+                indexMeta.set("__index", supermeta.get("__index"));
                 indexing.setmetatable(supermeta);
             }
         }
@@ -224,7 +236,7 @@ public class LuaBoundaryControl {
         return converted;
     }
 
-    public LuaValue J2L(Object val) {
+    public Varargs J2L(Object val) {
         if (val == null) {
             return LuaValue.NIL;
         }
@@ -258,7 +270,7 @@ public class LuaBoundaryControl {
             }
         }
 
-        if (val instanceof LuaValue l)
+        if (val instanceof Varargs l)
             return l;
         else if (val instanceof Double d)
             return LuaValue.valueOf(d);
