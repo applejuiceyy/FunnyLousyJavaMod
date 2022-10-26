@@ -3,6 +3,7 @@ package com.github.applejuiceyy.automa.client.lua;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import com.github.applejuiceyy.automa.client.lua.annotation.Metatable;
 import com.github.applejuiceyy.automa.client.lua.api.Player;
+import com.github.applejuiceyy.automa.client.lua.api.ScreenAPI;
 import com.github.applejuiceyy.automa.client.lua.api.Wrapper;
 import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.controls.lookControls.LookControlsLA;
@@ -11,6 +12,11 @@ import com.github.applejuiceyy.automa.client.lua.api.listener.CancellationState;
 import com.github.applejuiceyy.automa.client.lua.api.listener.Event;
 import com.github.applejuiceyy.automa.client.lua.api.listener.Future;
 import com.github.applejuiceyy.automa.client.lua.api.world.*;
+import com.github.applejuiceyy.automa.client.lua.entrypoint.AutomationEntrypoint;
+import com.github.applejuiceyy.automa.client.screen_handler_interface.*;
+import net.fabricmc.loader.FabricLoader;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
@@ -24,6 +30,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static com.github.applejuiceyy.automa.client.AutomaClient.LOGGER;
 
@@ -38,6 +45,15 @@ public class LuaBoundaryControl {
             MovementControlsLA.class,
             InventoryControlsLA.class,
             LookControlsLA.class,
+
+            ScreenAPI.class,
+            AutomatedGeneric.class,
+            AutomatedAnvil.class,
+            AutomatedForging.class,
+            AutomatedLectern.class,
+            AutomatedScreenHandler.class,
+            AutomatedScreenHandler.DynamicSlotReference.class,
+            AutomatedScreenHandler.DynamicSlotAction.class,
 
             CancellationState.class,
 
@@ -64,6 +80,13 @@ public class LuaBoundaryControl {
     public void loadAllClasses() {
         for (Class<?> cls: loadClasses) {
             buildClass(cls);
+        }
+
+        List<EntrypointContainer<AutomationEntrypoint>> entries =
+                FabricLoaderImpl.INSTANCE.getEntrypointContainers("automation", AutomationEntrypoint.class);
+
+        for (EntrypointContainer<AutomationEntrypoint> entry: entries){
+            entry.getEntrypoint().loadClasses(this::buildClass);
         }
     }
 
@@ -171,7 +194,7 @@ public class LuaBoundaryControl {
                 } catch (IllegalAccessException e) {
                     throw new LuaError("Cannot access method");
                 } catch (InvocationTargetException e) {
-                    throw new LuaError("Incorrect instance");
+                    throw new LuaError(e.getCause());
                 }
 
                 return J2L(ret);

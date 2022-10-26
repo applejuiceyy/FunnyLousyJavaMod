@@ -1,5 +1,6 @@
 package com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls;
 
+import com.github.applejuiceyy.automa.client.InventoryScreenHelper;
 import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import com.github.applejuiceyy.automa.client.lua.api.controls.MissionCriticalLuaInterface;
@@ -34,36 +35,14 @@ public class InventoryControlsLA extends MissionCriticalLuaInterface<InventoryCo
         this.owner.attackingItem = false;
     }
 
-
+    // TODO: merge with AutomatedScreenHandlers
     public ItemStackWrap getStack(int number) {
         return new ItemStackWrap(getPlayer().getInventory().getStack(number));
     }
 
     public void swapStacks(int from, int to) {
         checkControl();
-        PlayerScreenHandler screen = getPlayer().playerScreenHandler;
-
-        int fromSlot = -1;
-        int toSlot = -1;
-
-        for (Slot slot: screen.slots) {
-            if(slot.inventory == getPlayer().getInventory()) {
-                int index = ((SlotAccessor) slot).getIndex();
-
-                if(index == from) {
-                    fromSlot = slot.id;
-                }
-                if(index == to) {
-                    toSlot = slot.id;
-                }
-            }
-        }
-
-        if (fromSlot == -1 || toSlot == -1) {
-            throw new LuaError("Cannot find inventory slots");
-        }
-
-        getInteractionManager().clickSlot(screen.syncId, fromSlot, toSlot, SlotActionType.SWAP, getPlayer());
+        InventoryScreenHelper.moveStacks(getPlayer().playerScreenHandler, getPlayer().getInventory(), from, getPlayer().getInventory(), to);
     }
 
 

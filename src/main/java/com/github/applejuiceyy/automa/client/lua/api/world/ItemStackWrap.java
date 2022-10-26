@@ -14,6 +14,7 @@ public record ItemStackWrap(ItemStack stack) implements Wrapper<ItemStack> {
     public String id() {
         return Registry.ITEM.getId(this.stack.getItem()).toString();
     }
+    public int count() {return this.stack.getCount(); }
 
     public Block asBlock() {
         if (this.stack.getItem() instanceof BlockItem blockItem) {

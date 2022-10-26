@@ -12,6 +12,7 @@ public class Commands {
 
         arg.then(LoadScriptCommand.create());
         arg.then(EvaluateCommand.create());
+        arg.then(UnloadCommand.create());
 
         dispatcher.register(arg);
     }

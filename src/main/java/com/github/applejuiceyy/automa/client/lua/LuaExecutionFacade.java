@@ -2,12 +2,16 @@ package com.github.applejuiceyy.automa.client.lua;
 
 import com.github.applejuiceyy.automa.client.AutomaClient;
 import com.github.applejuiceyy.automa.client.lua.api.Player;
+import com.github.applejuiceyy.automa.client.lua.api.ScreenAPI;
 import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControls;
 import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.controls.lookControls.LookControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.controls.movementControls.MovementControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.listener.CancellationState;
 import com.github.applejuiceyy.automa.client.lua.api.listener.Event;
+import com.github.applejuiceyy.automa.client.lua.entrypoint.AutomationEntrypoint;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import org.luaj.vm2.*;
@@ -23,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.List;
 
 import static com.github.applejuiceyy.automa.client.lua.api.Getter.getClient;
 
@@ -97,9 +102,17 @@ public class LuaExecutionFacade {
         globals.set("inventory", boundary.J2L(new InventoryControlsLA(this, AutomaClient.inventoryControls)).arg1());
         globals.set("keyboard", boundary.J2L(new MovementControlsLA(this, AutomaClient.movementControls)).arg1());
         globals.set("mouse", boundary.J2L(new LookControlsLA(this, AutomaClient.lookControls)).arg1());
+        globals.set("screen", boundary.J2L(new ScreenAPI(this)).arg1());
 
 
         new LuaExecutionDebugger(this);
+
+        List<EntrypointContainer<AutomationEntrypoint>> entries =
+                FabricLoaderImpl.INSTANCE.getEntrypointContainers("automation", AutomationEntrypoint.class);
+
+        for (EntrypointContainer<AutomationEntrypoint> entry: entries){
+            entry.getEntrypoint().loadRuntime(this);
+        }
 
         wrapCall(this::runBootstrap);
     }

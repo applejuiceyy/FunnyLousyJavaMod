@@ -7,7 +7,6 @@ function await(...)
 
         local call = function (...)
             for _, v in pairs(undos) do
-                print(v)
                 v()
             end
 
