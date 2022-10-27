@@ -9,11 +9,11 @@ public class CancellationState {
     public CancellationState() {
         cancelled = false;
     }
-
+    @LuaConvertible
     public boolean isCancelled() {
         return cancelled;
     }
-
+    @LuaConvertible
     public void cancel() {
         cancelled = true;
     }

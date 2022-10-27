@@ -3,6 +3,7 @@ package com.github.applejuiceyy.automa.mixin;
 import com.github.applejuiceyy.automa.client.AutomaClient;
 import com.github.applejuiceyy.automa.client.mixin_interface.ClientPlayerEntityInterface;
 import com.github.applejuiceyy.automa.client.screen_handler_interface.AutomatedScreenHandler;
+import com.github.applejuiceyy.automa.mixin.acessors.ClientPlayerEntityAccessor;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import org.jetbrains.annotations.Nullable;

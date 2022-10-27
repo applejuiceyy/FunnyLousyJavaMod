@@ -14,7 +14,7 @@ public class AutomatedAnvil extends AutomatedForging<AnvilScreenHandler> {
     public AutomatedAnvil(LuaExecutionFacade executor, ScreenHandler handler) {
         super(executor, handler);
     }
-
+    @LuaConvertible
     public void setRename(String newName) {
         this.handler.setNewItemName(newName);
         getPlayer().networkHandler.sendPacket(new RenameItemC2SPacket(newName));

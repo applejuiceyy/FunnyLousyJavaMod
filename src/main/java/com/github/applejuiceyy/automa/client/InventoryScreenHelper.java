@@ -1,6 +1,6 @@
 package com.github.applejuiceyy.automa.client;
 
-import com.github.applejuiceyy.automa.mixin.SlotAccessor;
+import com.github.applejuiceyy.automa.mixin.acessors.SlotAccessor;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.screen.ScreenHandler;

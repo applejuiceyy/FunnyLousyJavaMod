@@ -12,15 +12,15 @@ public class AutomatedForging<T extends ForgingScreenHandler> extends AutomatedS
     public AutomatedForging(LuaExecutionFacade executor, ScreenHandler handler) {
         super(executor, (T) handler);
     }
-
+    @LuaConvertible
     public DynamicSlotReference first() {
         return new DynamicSlotReference(((ForgingScreenHandlerAccessor) handler).getInput(), 0);
     }
-
+    @LuaConvertible
     public DynamicSlotReference second() {
         return new DynamicSlotReference(((ForgingScreenHandlerAccessor) handler).getInput(), 1);
     }
-
+    @LuaConvertible
     public DynamicSlotReference result() {
         return new DynamicSlotReference(((ForgingScreenHandlerAccessor) handler).getOutput(), 2); // moment
     }

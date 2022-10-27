@@ -14,7 +14,7 @@ public class Future<T> extends Listener {
     public Future(LuaExecutionFacade owner) {
         super(owner);
     }
-
+    @LuaConvertible
     public void complete(T v) {
         if (complete) {
             throw new FutureAlreadyCompletedException();
@@ -24,14 +24,15 @@ public class Future<T> extends Listener {
         complete = true;
         this.fire(owner.boundary.J2L(v));
     }
-
+    @LuaConvertible
     public boolean isComplete() {
         return complete;
     }
-
+    @LuaConvertible
     public T getValue() { return value; }
 
     @Override
+    @LuaConvertible
     public Runnable subscribe(LuaValue value) {
         if (complete) {
             value.invoke(owner.boundary.J2L(value));

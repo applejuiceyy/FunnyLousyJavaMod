@@ -12,29 +12,32 @@ import static com.github.applejuiceyy.automa.client.lua.api.Getter.getPlayer;
 public class LookControlsLA extends MissionCriticalLuaInterface<LookControls> {
     public LookControlsLA(LuaExecutionFacade f, LookControls obj) { super(f, obj); }
 
+    @LuaConvertible
     public void lookAt(float pitch, float yaw) {
         checkControl();
         owner.lookAt(pitch, yaw);
     }
 
-    public void lookAtPos(double x, double y, double z) {
+    @LuaConvertible
+    public void lookAt(float x, float y, float z) {
         checkControl();
         getPlayer().lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, new Vec3d(x, y, z));
     }
 
+    @LuaConvertible
     public float getPitch() {
         return getPlayer().getPitch();
     }
-
+    @LuaConvertible
     public float getYaw() {
         return getPlayer().getYaw();
     }
-
+    @LuaConvertible
     public void setPitch(double pitch) {
         checkControl();
         owner.setPitch(pitch);
     }
-
+    @LuaConvertible
     public void setYaw(double yaw) {
         checkControl();
         owner.setYaw(yaw);

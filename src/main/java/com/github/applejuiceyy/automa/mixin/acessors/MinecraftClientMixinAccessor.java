@@ -1,4 +1,4 @@
-package com.github.applejuiceyy.automa.mixin;
+package com.github.applejuiceyy.automa.mixin.acessors;
 
 import net.minecraft.client.MinecraftClient;
 import org.spongepowered.asm.mixin.Mixin;

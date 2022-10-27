@@ -12,27 +12,43 @@ public class MovementControlsLA extends MissionCriticalLuaInterface<MovementCont
     public MovementControlsLA(LuaExecutionFacade f, MovementControls obj) {
         super(f, obj);
     }
-
+    @LuaConvertible
     public void forwards() { checkControl(); owner.forwards = true; }
+    @LuaConvertible
     public void backwards() { checkControl(); owner.backwards = true; }
+    @LuaConvertible
     public void left() { checkControl(); owner.left = true; }
+    @LuaConvertible
     public void right() { checkControl(); owner.right = true; }
+    @LuaConvertible
     public void jumping() { checkControl(); owner.jumping = true; }
+    @LuaConvertible
     public void sneaking() { checkControl(); owner.sneaking = true; }
 
+    @LuaConvertible
     public void stopForwards() { checkControl(); owner.forwards = false; }
+    @LuaConvertible
     public void stopBackwards() { checkControl(); owner.backwards = false; }
+    @LuaConvertible
     public void stopLeft() { checkControl(); owner.left = false; }
+    @LuaConvertible
     public void stopRight() { checkControl(); owner.right = false; }
+    @LuaConvertible
     public void stopJumping() { checkControl(); owner.jumping = false; }
+    @LuaConvertible
     public void stopSneaking() { checkControl(); owner.sneaking = false; }
 
+    @LuaConvertible
     public void sprinting() {checkControl(); owner.sprinting = true; }
+    @LuaConvertible
     public void stopSprinting() {checkControl(); owner.sprinting = false; }
 
+    @LuaConvertible
     public void autoJump() {checkControl(); owner.autoJump = true; }
+    @LuaConvertible
     public void stopAutoJump() {checkControl(); owner.autoJump = false; }
 
+    @LuaConvertible
     public void jump() {
         checkControl();
         // dirty hack

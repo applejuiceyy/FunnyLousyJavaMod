@@ -3,12 +3,13 @@ package com.github.applejuiceyy.automa.client.lua;
 import com.github.applejuiceyy.automa.client.AutomaClient;
 import com.github.applejuiceyy.automa.client.lua.api.Player;
 import com.github.applejuiceyy.automa.client.lua.api.ScreenAPI;
-import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControls;
 import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.controls.lookControls.LookControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.controls.movementControls.MovementControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.listener.CancellationState;
 import com.github.applejuiceyy.automa.client.lua.api.listener.Event;
+import com.github.applejuiceyy.automa.client.lua.api.world.World;
+import com.github.applejuiceyy.automa.client.lua.boundary.LuaBoundaryControl;
 import com.github.applejuiceyy.automa.client.lua.entrypoint.AutomationEntrypoint;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
@@ -103,6 +104,7 @@ public class LuaExecutionFacade {
         globals.set("keyboard", boundary.J2L(new MovementControlsLA(this, AutomaClient.movementControls)).arg1());
         globals.set("mouse", boundary.J2L(new LookControlsLA(this, AutomaClient.lookControls)).arg1());
         globals.set("screen", boundary.J2L(new ScreenAPI(this)).arg1());
+        globals.set("world", boundary.J2L(new World()).arg1());
 
 
         new LuaExecutionDebugger(this);
@@ -175,12 +177,17 @@ public class LuaExecutionFacade {
     }
 
     public boolean wrapCall(Runnable calling, boolean stopExecution) {
+        if (!executing) {
+            return false;
+        }
         try {
             calling.run();
             return true;
         }
         catch (Exception err) {
-            stop();
+            if (stopExecution) {
+                stop();
+            }
 
             if (getClient().player != null) {
                 getClient().player.sendMessage(Text.literal("[Automa] ").setStyle(Style.EMPTY.withColor(0xff4400)).append(Text.of(err.toString())));

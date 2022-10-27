@@ -27,7 +27,7 @@ public class Listener {
         subscribers.put(id, value);
         return () -> subscribers.remove(id);
     }
-
+    @LuaConvertible
     public Runnable subscribeOnce(LuaValue value) {
         int id = next++;
         subscribers.put(id, new VarArgFunction() {

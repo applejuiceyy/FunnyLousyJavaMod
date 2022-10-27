@@ -1,4 +1,4 @@
-package com.github.applejuiceyy.automa.mixin;
+package com.github.applejuiceyy.automa.mixin.acessors;
 
 import com.github.applejuiceyy.automa.client.screen_handler_interface.AutomatedScreenHandler;
 import net.minecraft.client.network.ClientPlayerEntity;

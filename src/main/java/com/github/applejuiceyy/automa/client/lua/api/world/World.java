@@ -7,12 +7,11 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.Objects;
 
+import static com.github.applejuiceyy.automa.client.lua.api.Getter.getClient;
+
 @LuaConvertible
 public class World {
-    MinecraftClient getClient() {
-        return MinecraftClient.getInstance();
-    }
-
+    @LuaConvertible
     public BlockState getBlockState(int x, int y, int z) {
         return Objects.requireNonNull(getClient().world).getBlockState(new BlockPos(x, y, z));
     }

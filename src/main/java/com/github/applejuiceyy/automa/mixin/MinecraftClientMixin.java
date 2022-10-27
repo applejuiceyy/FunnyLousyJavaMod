@@ -3,9 +3,12 @@ package com.github.applejuiceyy.automa.mixin;
 import com.github.applejuiceyy.automa.client.AutomaClient;
 import com.github.applejuiceyy.automa.client.lua.LuaExecutionContainer;
 import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.mixin.acessors.KeyBindAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.option.KeyBinding;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -48,65 +51,38 @@ public class MinecraftClientMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z",
                     ordinal = 0
-            ),
-            cancellable = true
+            )
     )
     void d(CallbackInfo ci) {
-        // code in here is very iffy, I think the only solution is just to replace it
-        MinecraftClient t = (MinecraftClient)(Object) this;
-        MinecraftClientMixinAccessor tc = (MinecraftClientMixinAccessor) t;
+        MinecraftClient tthis = ((MinecraftClient)(Object) this);
 
-        LuaExecutionFacade c;
-        if ((c = LuaExecutionContainer.getExecutor()) != null) {
-            boolean attacking = false;
-            assert t.player != null;
-            assert t.interactionManager != null;
+        KeyBindAccessor use = cast(tthis.options.useKey);
+        KeyBindAccessor attack = cast(tthis.options.attackKey);
+        KeyBindAccessor pick = cast(tthis.options.pickItemKey);
 
-            if (t.player.isUsingItem()) {
-                if ((!t.options.useKey.isPressed() || AutomaClient.inventoryControls.requested()) && !AutomaClient.inventoryControls.usingItem) {
-                    t.interactionManager.stopUsingItem(t.player);
-                }
-                while (t.options.attackKey.wasPressed()) {
-                }
-                while (t.options.useKey.wasPressed()) {
-                }
-                while (t.options.pickItemKey.wasPressed()) {
-                }
-            } else {
-                while (t.options.attackKey.wasPressed()) {
-                    if (!AutomaClient.inventoryControls.requested()) {
-                        attacking |= tc.invokeDoAttack();
-                    }
-                }
-                if (AutomaClient.inventoryControls.attackingItem) {
-                    attacking |= tc.invokeDoAttack();
-                }
-                while (t.options.useKey.wasPressed()) {
-                    if (!AutomaClient.inventoryControls.requested()) {
-                        tc.invokeDoItemUse();
-                    }
-                }
-                if (AutomaClient.inventoryControls.usingItem) {
-                    tc.invokeDoItemUse();
-                }
-                while (t.options.pickItemKey.wasPressed()) {
-                    if (!AutomaClient.inventoryControls.requested()) {
-                        tc.invokeDoItemPick();
-                    }
-                }
-            }
-            if (t.options.useKey.isPressed() && tc.getItemUseCooldown() == 0 && !t.player.isUsingItem()) {
-                tc.invokeDoItemUse();
-            }
+        if (AutomaClient.inventoryControls.requested()) {
+            use.setTimesPressed(0);
+            attack.setTimesPressed(0);
+            pick.setTimesPressed(0);
 
-
-            tc.invokeHandleBlockBreaking(
-                    t.currentScreen == null &&
-                            !attacking &&
-                            ((t.options.attackKey.isPressed() && !AutomaClient.inventoryControls.requested()) || AutomaClient.inventoryControls.attackingItem) &&
-                            (t.mouse.isCursorLocked() || AutomaClient.inventoryControls.attackingItem)
-            );
-            ci.cancel();
+            tthis.options.useKey.setPressed(false);
+            tthis.options.attackKey.setPressed(false);
+            tthis.options.pickItemKey.setPressed(false);
         }
+
+        if (AutomaClient.inventoryControls.attackingItem) {
+            attack.setTimesPressed(attack.getTimesPressed() + 1);
+            tthis.options.attackKey.setPressed(true);
+        }
+
+        if (AutomaClient.inventoryControls.usingItem) {
+            use.setTimesPressed(attack.getTimesPressed() + 1);
+            tthis.options.useKey.setPressed(true);
+        }
+    }
+
+    @Unique
+    KeyBindAccessor cast(KeyBinding key) {
+        return (KeyBindAccessor) key;
     }
 }

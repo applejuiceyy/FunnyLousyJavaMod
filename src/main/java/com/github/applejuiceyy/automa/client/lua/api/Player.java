@@ -13,6 +13,7 @@ import static com.github.applejuiceyy.automa.client.lua.api.Getter.*;
 
 @LuaConvertible
 public class Player {
+    @LuaConvertible
     public BlockState getRayCast() {
         HitResult result = getClient().crosshairTarget;
 
@@ -22,7 +23,7 @@ public class Player {
 
         return null;
     }
-
+    @LuaConvertible
     public Varargs getPos() {
         ClientPlayerEntity player = getPlayer();
         Vec3d pos = player.getLerpedPos(getClient().getTickDelta());

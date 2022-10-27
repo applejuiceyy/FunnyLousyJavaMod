@@ -20,10 +20,11 @@ public class ScreenAPI {
     public ScreenAPI(LuaExecutionFacade executor) {
         this.executor = executor;
     }
+    @LuaConvertible
     public boolean isScreenOpen() {
         return getClient().currentScreen != null;
     }
-
+    @LuaConvertible
     public boolean isHandledScreenOpen() {
         // the field currentScreenHandler has meaningful null checks
         // but the field is never set to null
@@ -34,7 +35,7 @@ public class ScreenAPI {
         // so we treat playerScreenHandler as the null empty value
         return getPlayer().currentScreenHandler != getPlayer().playerScreenHandler;
     }
-
+    @LuaConvertible
     public boolean hasAutomatedHandledScreen() {
         if (!isHandledScreenOpen()) {
             return false;
@@ -42,7 +43,7 @@ public class ScreenAPI {
         updateASH();
         return handler != null;
     }
-
+    @LuaConvertible
     public AutomatedScreenHandler<?> getAutomatedHandledScreen() {
         updateASH();
         return handler;

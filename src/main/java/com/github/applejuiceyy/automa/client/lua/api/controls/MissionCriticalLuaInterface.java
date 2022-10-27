@@ -21,13 +21,13 @@ public abstract class MissionCriticalLuaInterface<V extends MissionCritical> {
         owner = obj;
         execution = f;
     }
-
+    @LuaConvertible
     public Future<?> await() {
         Future<?> future = new Future<>(execution);
         owner.completeOnAvailable(future);
         return future;
     }
-
+    @LuaConvertible
     public boolean tryRequest() {
         try {
             revoker = owner.tryRequest(execution.getName());
@@ -36,7 +36,7 @@ public abstract class MissionCriticalLuaInterface<V extends MissionCritical> {
             return false;
         }
     }
-
+    @LuaConvertible
     public void request() {
         Future<?> future = await();
 
@@ -56,15 +56,15 @@ public abstract class MissionCriticalLuaInterface<V extends MissionCritical> {
 
         tryRequest();
     }
-
+    @LuaConvertible
     public void revoke() {
         revoker.revoke();
     }
-
+    @LuaConvertible
     public boolean hasControl() {
         return revoker != null || !owner.requested();
     }
-
+    @LuaConvertible
     public boolean hasAbsoluteControl() {
         return revoker != null && owner.requested();
     }

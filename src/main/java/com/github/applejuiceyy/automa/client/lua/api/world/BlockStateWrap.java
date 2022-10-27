@@ -9,6 +9,7 @@ import net.minecraft.util.registry.Registry;
 
 @LuaConvertible
 public record BlockStateWrap(BlockState blockState) implements Wrapper<BlockState> {
+    @LuaConvertible
     public String getPreferredTool() {
         if (blockState.isIn(BlockTags.PICKAXE_MINEABLE)) {
             return "PICKAXE";
@@ -25,11 +26,11 @@ public record BlockStateWrap(BlockState blockState) implements Wrapper<BlockStat
 
         return null;
     }
-
+    @LuaConvertible
     public int getPreferredLevel() {
         return MiningLevelManager.getRequiredMiningLevel(blockState);
     }
-
+    @LuaConvertible
     public String id() {
         return Registry.BLOCK.getId(this.blockState.getBlock()).toString();
     }

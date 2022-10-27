@@ -8,10 +8,11 @@ import net.minecraft.util.registry.Registry;
 
 @LuaConvertible
 public record BlockWrap(Block block) implements Wrapper<Block> {
+    @LuaConvertible
     public BlockState getDefaultBlockState() {
         return block.getDefaultState();
     }
-
+    @LuaConvertible
     public String id() {
         return Registry.BLOCK.getId(this.block).toString();
     }

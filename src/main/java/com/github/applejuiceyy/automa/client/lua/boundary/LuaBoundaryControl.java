@@ -1,7 +1,7 @@
-package com.github.applejuiceyy.automa.client.lua;
+package com.github.applejuiceyy.automa.client.lua.boundary;
 
+import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
-import com.github.applejuiceyy.automa.client.lua.annotation.Metatable;
 import com.github.applejuiceyy.automa.client.lua.api.Player;
 import com.github.applejuiceyy.automa.client.lua.api.ScreenAPI;
 import com.github.applejuiceyy.automa.client.lua.api.Wrapper;
@@ -14,7 +14,6 @@ import com.github.applejuiceyy.automa.client.lua.api.listener.Future;
 import com.github.applejuiceyy.automa.client.lua.api.world.*;
 import com.github.applejuiceyy.automa.client.lua.entrypoint.AutomationEntrypoint;
 import com.github.applejuiceyy.automa.client.screen_handler_interface.*;
-import net.fabricmc.loader.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.block.Block;
@@ -24,15 +23,8 @@ import net.minecraft.item.ItemStack;
 import org.luaj.vm2.*;
 import org.luaj.vm2.lib.VarArgFunction;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
-import static com.github.applejuiceyy.automa.client.AutomaClient.LOGGER;
+import java.lang.reflect.*;
+import java.util.*;
 
 public class LuaBoundaryControl {
     private final HashMap<Class<?>, LuaTable> cache = new HashMap<>();
@@ -123,26 +115,36 @@ public class LuaBoundaryControl {
             }
         };
 
+        HashMap<String, ArrayList<Method>> methods = new HashMap<>();
+
         for(Method method: cls.getDeclaredMethods()) {
-            if(Modifier.isPublic(method.getModifiers())) {
+            if(method.isAnnotationPresent(LuaConvertible.class) && Modifier.isPublic(method.getModifiers())) {
                 String name = method.getName();
 
-                if (method.getName().equals("getInstanceFactory")) {
-                    try {
-                        constructor = J2L(method.invoke(null, this.owner)).arg1();
-                    } catch (Exception e) {
-                        LOGGER.error(String.format("Constructor factory of class %s failed", cls.getName()));
-                    }
-                    continue;
+                if (!methods.containsKey(name)) {
+                    methods.put(name, new ArrayList<>());
                 }
 
-                if (method.isAnnotationPresent(Metatable.class)) {
-                    metatable.set(name, buildMethod(method));
+                ArrayList<Method> methods_ = methods.get(name);
+
+                if(methods_.size() > 0) {
+                    boolean should = Modifier.isStatic(methods_.get(methods_.size() - 1).getModifiers());
+                    boolean isit = Modifier.isStatic(method.getModifiers());
+
+                    if (should != isit) {
+                        throw new RuntimeException("Overloads cannot vary in static");
+                    }
                 }
-                else {
-                    indexing.set(name, buildMethod(method));
-                }
+
+                methods_.add(method);
             }
+        }
+
+        for (Map.Entry<String, ArrayList<Method>> entry : methods.entrySet()) {
+            Method[] arr = new Method[entry.getValue().size()];
+            entry.getValue().toArray(arr);
+            boolean isStatic = Modifier.isStatic(arr[0].getModifiers());
+            indexing.set(entry.getKey(), new MethodWrapper(this, arr, isStatic));
         }
 
         indexing.set("new", constructor);
@@ -155,13 +157,15 @@ public class LuaBoundaryControl {
 
         Class<?> supercls = cls.getSuperclass();
 
-        if (supercls != Object.class) {
+        if (supercls != Object.class && supercls != Record.class) {
             if (supercls.isAnnotationPresent(LuaConvertible.class)) {
                 LuaTable supermeta = buildClass(supercls);
                 metatable.setmetatable(supermeta);
                 LuaTable indexMeta = new LuaTable();
                 indexMeta.set("__index", supermeta.get("__index"));
                 indexing.setmetatable(supermeta);
+            } else {
+                throw new RuntimeException("A class annotated with LuaConvertible should inherit a class annotated with LuaConvertible (tested " + supercls.getName() + ")");
             }
         }
 
@@ -170,36 +174,6 @@ public class LuaBoundaryControl {
         cache.put(cls, metatable);
 
         return metatable;
-    }
-
-    public LuaFunction buildMethod(Method method) {
-        return new VarArgFunction() {
-            @Override
-            public Varargs invoke(Varargs args) {
-                // the first argument is stored separately so we don't have to resize
-                // the array
-                boolean isStatic = Modifier.isStatic(method.getModifiers());
-
-                Object ret;
-
-                try {
-                    if (isStatic) {
-                        Object[] converted = LVarargs2J(args);
-                        ret = method.invoke(null, converted);
-                    }
-                    else {
-                        FirstSeparatedArray<Object> converted = LVarargsSeparated2J(args, false);
-                        ret = method.invoke(converted.first, converted.rest);
-                    }
-                } catch (IllegalAccessException e) {
-                    throw new LuaError("Cannot access method");
-                } catch (InvocationTargetException e) {
-                    throw new LuaError(e.getCause());
-                }
-
-                return J2L(ret);
-            }
-        };
     }
 
     public Object L2J(LuaValue val) {
@@ -233,21 +207,6 @@ public class LuaBoundaryControl {
             return null;
     }
 
-    public FirstSeparatedArray<Object> LVarargsSeparated2J(Varargs args, boolean unwrapFirst) {
-        Object[] converted = new Object[args.narg() - 1];
-        Object first = null;
-
-        for (int i = 0; i < args.narg(); i++) {
-            if (i == 0) {
-                first = L2J(args.arg(i + 1), unwrapFirst);
-            }
-            else {
-                converted[i - 1] = L2J(args.arg(i + 1));
-            }
-        }
-
-        return new FirstSeparatedArray<>(first, converted);
-    }
 
     public Object[] LVarargs2J(Varargs args) {
         Object[] converted = new Object[args.narg()];
@@ -363,6 +322,4 @@ public class LuaBoundaryControl {
         result.setmetatable(metatable);
         return result;
     }
-
-    public record FirstSeparatedArray<V>(V first, V[] rest) {}
 }

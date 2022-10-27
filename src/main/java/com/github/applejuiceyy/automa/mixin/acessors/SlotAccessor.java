@@ -1,4 +1,4 @@
-package com.github.applejuiceyy.automa.mixin;
+package com.github.applejuiceyy.automa.mixin.acessors;
 
 import net.minecraft.screen.slot.Slot;
 import org.spongepowered.asm.mixin.Mixin;

@@ -10,12 +10,13 @@ import net.minecraft.util.registry.Registry;
 
 @LuaConvertible
 public record ItemStackWrap(ItemStack stack) implements Wrapper<ItemStack> {
-
+    @LuaConvertible
     public String id() {
         return Registry.ITEM.getId(this.stack.getItem()).toString();
     }
+    @LuaConvertible
     public int count() {return this.stack.getCount(); }
-
+    @LuaConvertible
     public Block asBlock() {
         if (this.stack.getItem() instanceof BlockItem blockItem) {
             return blockItem.getBlock();
@@ -23,7 +24,7 @@ public record ItemStackWrap(ItemStack stack) implements Wrapper<ItemStack> {
 
         return null;
     }
-
+    @LuaConvertible
     public Item asItem() {
         return this.stack.getItem();
     }
