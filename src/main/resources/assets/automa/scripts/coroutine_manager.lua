@@ -23,7 +23,7 @@ function step(thread, ...)
     local result, event = coroutine.resume(thread, ...)
 
     if not result then
-        error(event)
+        error(event, 0)
     end
 
     if event ~= nil then

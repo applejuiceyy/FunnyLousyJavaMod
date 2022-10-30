@@ -26,6 +26,9 @@ import org.luaj.vm2.lib.VarArgFunction;
 import java.lang.reflect.*;
 import java.util.*;
 
+import static com.github.applejuiceyy.automa.client.lua.boundary.LuaWrappingHelper.ensureUnwrapped;
+import static com.github.applejuiceyy.automa.client.lua.boundary.LuaWrappingHelper.ensureWrapped;
+
 public class LuaBoundaryControl {
     private final HashMap<Class<?>, LuaTable> cache = new HashMap<>();
     private final LuaExecutionFacade owner;
@@ -57,13 +60,6 @@ public class LuaBoundaryControl {
             BlockStateWrap.class,
             ItemWrap.class
     };
-
-    static HashMap<Class<?>, Class<? extends Wrapper<?>>> wrappers = new HashMap<>(){{
-        this.put(Block.class, BlockWrap.class);
-        this.put(BlockState.class, BlockStateWrap.class);
-        this.put(ItemStack.class, ItemStackWrap.class);
-        this.put(Item.class, ItemWrap.class);
-    }};
 
     public LuaBoundaryControl(LuaExecutionFacade owner) {
         this.owner = owner;
@@ -177,10 +173,6 @@ public class LuaBoundaryControl {
     }
 
     public Object L2J(LuaValue val) {
-        return L2J(val, true);
-    }
-
-    public Object L2J(LuaValue val, boolean unwrap) {
         if (val.istable())
             return val.checktable();
         else if (val.isnumber())
@@ -198,10 +190,7 @@ public class LuaBoundaryControl {
             return val.checkfunction();
         else if (val.isuserdata()) {
             Object obj = val.checkuserdata(Object.class);
-            if (unwrap && Arrays.stream(obj.getClass().getInterfaces()).anyMatch((p) -> p == Wrapper.class)) {
-                return ((Wrapper<?>) obj).getWrapped();
-            }
-            return obj;
+            return ensureUnwrapped(obj);
         }
         else
             return null;
@@ -223,34 +212,7 @@ public class LuaBoundaryControl {
             return LuaValue.NIL;
         }
 
-        {
-            Class<?> current = val.getClass();
-
-            while (current != Object.class) {
-                if (wrappers.containsKey(current)) {
-                    Class<?> wrapping = wrappers.get(current);
-                    Constructor<?> constructor;
-                    try {
-                        constructor = wrapping.getConstructor(current);
-                    } catch (NoSuchMethodException e) {
-                        throw new RuntimeException("Wrapper class has no valid constructor");
-                    }
-
-                    try {
-                        val = constructor.newInstance(val);
-                        break;
-                    } catch (InstantiationException e) {
-                        throw new RuntimeException("Attempt at instancing a wrapper instance failed");
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException("Wrapper constructor is not accessible");
-                    } catch (InvocationTargetException e) {
-                        throw new RuntimeException("Failed to create instance");
-                    }
-                }
-
-                current = current.getSuperclass();
-            }
-        }
+        val = ensureWrapped(val);
 
         if (val instanceof Varargs l)
             return l;

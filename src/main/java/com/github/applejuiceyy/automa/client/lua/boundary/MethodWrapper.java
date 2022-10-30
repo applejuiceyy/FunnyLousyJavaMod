@@ -17,7 +17,7 @@ class MethodWrapper extends VarArgFunction {
         this.controller = owner;
         this.isStatic = isStatic;
 
-        tree = ParameterTree.from(methods);
+        tree = ParameterTree.from(methods, isStatic);
     }
 
     @Override

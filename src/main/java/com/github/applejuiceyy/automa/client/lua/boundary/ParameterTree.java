@@ -12,13 +12,17 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.*;
 
+import static com.github.applejuiceyy.automa.client.lua.LuaUtils.wrapException;
+
 public class ParameterTree {
     HashMap<String, List<ParameterTree>> nodes;
     @Nullable CollectedMethod executes;
+    boolean isStatic;
 
-    ParameterTree(HashMap<String, List<ParameterTree>> nodes, @Nullable CollectedMethod executes) {
+    ParameterTree(HashMap<String, List<ParameterTree>> nodes, @Nullable CollectedMethod executes, boolean isStatic) {
         this.nodes = nodes;
         this.executes = executes;
+        this.isStatic = isStatic;
     }
 
     Object execute(Varargs vars) {
@@ -71,7 +75,7 @@ public class ParameterTree {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Illegal access");
             } catch (InvocationTargetException e) {
-                throw new LuaError(e.getTargetException());
+                throw wrapException(e.getTargetException());
             }
         }
 
@@ -129,11 +133,11 @@ public class ParameterTree {
     }
 
 
-    public static ParameterTree from(Method[] methods) {
-        return from(Arrays.stream(methods).map(CollectedMethod::from).toList(), 0);
+    public static ParameterTree from(Method[] methods, boolean isStatic) {
+        return from(Arrays.stream(methods).map(CollectedMethod::from).toList(), 0, isStatic);
     }
 
-    public static ParameterTree from(List<CollectedMethod> methods, int padding) {
+    public static ParameterTree from(List<CollectedMethod> methods, int padding, boolean isStatic) {
         HashMap<String, ArrayList<CollectedMethod>> sorted = new HashMap<>();
         CollectedMethod executes = null;
 
@@ -158,10 +162,10 @@ public class ParameterTree {
             List<ParameterTree> f = new ArrayList<>();
             assembled.put(entry.getKey(), f);
 
-            f.add(from(entry.getValue(), padding + 1));
+            f.add(from(entry.getValue(), padding + 1, isStatic));
         }
 
-        return new ParameterTree(assembled, executes);
+        return new ParameterTree(assembled, executes, isStatic);
     }
 
     record CollectedMethod(Method method, Type[] parameters, Annotation[][] annotations) {
