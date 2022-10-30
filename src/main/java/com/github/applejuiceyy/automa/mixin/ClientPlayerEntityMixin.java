@@ -1,12 +1,9 @@
 package com.github.applejuiceyy.automa.mixin;
 
 import com.github.applejuiceyy.automa.client.AutomaClient;
-import com.github.applejuiceyy.automa.client.mixin_interface.ClientPlayerEntityInterface;
-import com.github.applejuiceyy.automa.client.screen_handler_interface.AutomatedScreenHandler;
 import com.github.applejuiceyy.automa.mixin.acessors.ClientPlayerEntityAccessor;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,9 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerEntity.class)
-public class ClientPlayerEntityMixin implements ClientPlayerEntityInterface {
-    AutomatedScreenHandler<?> handler;
-
+public class ClientPlayerEntityMixin {
     @Redirect(method="tickMovement", at=@At(value = "INVOKE", target = "Lnet/minecraft/client/option/KeyBinding;isPressed()Z", ordinal = 1))
     boolean a(KeyBinding instance) {
         return (!AutomaClient.movementControls.requested() && instance.isPressed()) || AutomaClient.movementControls.sprinting;
@@ -36,15 +31,5 @@ public class ClientPlayerEntityMixin implements ClientPlayerEntityInterface {
             cir.setReturnValue(AutomaClient.movementControls.autoJump);
         }
         cir.setReturnValue(AutomaClient.movementControls.autoJump || ((ClientPlayerEntityAccessor)this).isAutoJumpFieldEnabled());
-    }
-
-    @Override
-    public AutomatedScreenHandler<?> getAutomatedScreenHandler() {
-        return handler;
-    }
-
-    @Override
-    public void setAutomatedScreenHandler(@Nullable AutomatedScreenHandler<?> handler) {
-        this.handler = handler;
     }
 }

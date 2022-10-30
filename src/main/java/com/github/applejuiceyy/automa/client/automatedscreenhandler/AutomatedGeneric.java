@@ -1,14 +1,10 @@
-package com.github.applejuiceyy.automa.client.screen_handler_interface;
+package com.github.applejuiceyy.automa.client.automatedscreenhandler;
 
 import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
 import com.github.applejuiceyy.automa.client.lua.annotation.IsIndex;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.Generic3x3ContainerScreenHandler;
-import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
-
-import static com.github.applejuiceyy.automa.client.lua.api.Getter.getPlayer;
 
 @LuaConvertible
 public class AutomatedGeneric extends AutomatedScreenHandler<ScreenHandler> {

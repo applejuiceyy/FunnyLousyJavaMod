@@ -1,4 +1,4 @@
-package com.github.applejuiceyy.automa.client.screen_handler_interface;
+package com.github.applejuiceyy.automa.client.automatedscreenhandler;
 
 import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
@@ -6,7 +6,6 @@ import net.minecraft.network.packet.c2s.play.RenameItemC2SPacket;
 import net.minecraft.screen.AnvilScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 
-import static com.github.applejuiceyy.automa.client.lua.api.Getter.getInteractionManager;
 import static com.github.applejuiceyy.automa.client.lua.api.Getter.getPlayer;
 
 @LuaConvertible

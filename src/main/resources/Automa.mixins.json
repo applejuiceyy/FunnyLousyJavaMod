@@ -15,7 +15,6 @@
     "MouseMixin",
     "acessors.ClientPlayerEntityAccessor",
     "acessors.KeyBindAccessor",
-    "acessors.MinecraftClientMixinAccessor",
     "acessors.SlotAccessor",
     "screenhandler.AnvilScreenHandlerAccessor",
     "screenhandler.ForgingScreenHandlerAccessor",

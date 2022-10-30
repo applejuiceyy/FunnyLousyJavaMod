@@ -2,9 +2,8 @@ package com.github.applejuiceyy.automa.client.lua.api;
 
 import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
-import com.github.applejuiceyy.automa.client.screen_handler_interface.AutomatedScreenHandler;
-import com.github.applejuiceyy.automa.client.screen_handler_interface.AutomatedScreenHandlers;
-import com.github.applejuiceyy.automa.client.mixin_interface.ClientPlayerEntityInterface;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.AutomatedScreenHandler;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.AutomatedScreenHandlers;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.screen.ScreenHandler;
 

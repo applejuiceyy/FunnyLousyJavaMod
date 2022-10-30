@@ -1,7 +1,6 @@
 package com.github.applejuiceyy.automa.client.lua.boundary;
 
 import com.github.applejuiceyy.automa.client.lua.annotation.IsIndex;
-import com.github.applejuiceyy.automa.client.screen_handler_interface.AutomatedScreenHandler;
 import org.jetbrains.annotations.Nullable;
 import org.luaj.vm2.*;
 import org.spongepowered.include.com.google.common.base.Function;
