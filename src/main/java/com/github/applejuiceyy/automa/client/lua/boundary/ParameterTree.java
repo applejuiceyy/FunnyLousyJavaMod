@@ -1,6 +1,7 @@
 package com.github.applejuiceyy.automa.client.lua.boundary;
 
 import com.github.applejuiceyy.automa.client.lua.annotation.IsIndex;
+import com.github.applejuiceyy.automa.client.screen_handler_interface.AutomatedScreenHandler;
 import org.jetbrains.annotations.Nullable;
 import org.luaj.vm2.*;
 import org.spongepowered.include.com.google.common.base.Function;
@@ -13,6 +14,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 import static com.github.applejuiceyy.automa.client.lua.LuaUtils.wrapException;
+import static com.github.applejuiceyy.automa.client.lua.boundary.LuaWrappingHelper.ensureUnwrapped;
 
 public class ParameterTree {
     HashMap<String, List<ParameterTree>> nodes;
@@ -94,6 +96,9 @@ public class ParameterTree {
                 case "org.luaj.vm2.LuaValue" -> value;
                 default -> {
                     Object val = value.checkuserdata();
+                    if(isStatic || position > 0) {
+                        val = ensureUnwrapped(val);
+                    }
                     try {
                         if (Class.forName(name).isAssignableFrom(val.getClass())) {
                             yield val;
@@ -185,7 +190,7 @@ public class ParameterTree {
                 n[0] = new Type() {
                     @Override
                     public String getTypeName() {
-                        return method.getDeclaringClass().getCanonicalName();
+                        return method.getDeclaringClass().getName();
                     }
                 };
                 parameters = n;
