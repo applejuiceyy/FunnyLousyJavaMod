@@ -37,10 +37,17 @@ public class LuaBoundaryControl {
             LookControlsLA.class,
 
             ScreenAPI.class,
-            AutomatedGeneric.class,
             AutomatedAnvil.class,
-            AutomatedForging.class,
+            AutomatedBeacon.class,
+            AutomatedBrewingStand.class,
+            AutomatedCrafting.class,
+            AutomatedEnchantmentTable.class,
+            AutomatedEnchantmentTable.EnchantmentEntryInfo.class,
+            AutomatedFurnace.class,
+            AutomatedGeneric.class,
             AutomatedLectern.class,
+            Generic2ItemMerger.class,
+
             AutomatedScreenHandler.class,
             AutomatedScreenHandler.DynamicSlotReference.class,
             AutomatedScreenHandler.DynamicSlotAction.class,
@@ -53,7 +60,8 @@ public class LuaBoundaryControl {
             World.class,
             BlockWrap.class,
             BlockStateWrap.class,
-            ItemWrap.class
+            ItemWrap.class,
+            EnchantmentWrap.class
     };
 
     public LuaBoundaryControl(LuaExecutionFacade owner) {

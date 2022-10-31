@@ -38,7 +38,6 @@ public class LuaExecutionFacade {
     public final Path dir;
 
     public final LuaBoundaryControl boundary;
-    public final LuaExecutionDebugger stat;
 
     boolean executing = true;
 
@@ -65,9 +64,6 @@ public class LuaExecutionFacade {
         globals.load(new JseMathLib());
         globals.load(new DebugLib());
         globals.load(new CoroutineLib());
-
-        stat = new LuaExecutionDebugger(this);
-        globals.get("coroutine").set("create", stat.generateCustomCoroutineCreate());
 
         LuaC.install(globals);
 
@@ -105,9 +101,6 @@ public class LuaExecutionFacade {
         globals.set("mouse", boundary.J2L(new LookControlsLA(this, AutomaClient.lookControls)).arg1());
         globals.set("screen", boundary.J2L(new ScreenAPI(this)).arg1());
         globals.set("world", boundary.J2L(new World()).arg1());
-
-
-        new LuaExecutionDebugger(this);
 
         List<EntrypointContainer<AutomationEntrypoint>> entries =
                 FabricLoaderImpl.INSTANCE.getEntrypointContainers("automation", AutomationEntrypoint.class);
@@ -172,10 +165,6 @@ public class LuaExecutionFacade {
         return globals.load(content, chunkname);
     }
 
-    public LuaThread asThread(LuaValue value) {
-        return new LuaThread(globals, value);
-    }
-
     public boolean wrapCall(Runnable calling, boolean stopExecution) {
         if (!executing) {
             return false;
@@ -217,5 +206,5 @@ public class LuaExecutionFacade {
     public void manageCoroutine(LuaValue value) {
         coroutineManager.call(value);
     }
-    public LuaThread createCoroutine(LuaValue func) { return stat.createCoroutine(func);}
+    public LuaThread createCoroutine(LuaValue func) { return new LuaThread(globals, func);}
 }

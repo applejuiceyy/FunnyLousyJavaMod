@@ -1,6 +1,7 @@
 package com.github.applejuiceyy.automa.client.lua.api;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.world.ClientWorld;
@@ -15,7 +16,8 @@ public class Getter {
     public static ClientPlayerInteractionManager getInteractionManager() {
         return getClient().interactionManager;
     }
-    static ClientWorld getWorld() {
+    public static ClientWorld getWorld() {
         return getClient().world;
     }
+    public static ClientPlayNetworkHandler getNetworkHandler() {return getClient().getNetworkHandler(); }
 }

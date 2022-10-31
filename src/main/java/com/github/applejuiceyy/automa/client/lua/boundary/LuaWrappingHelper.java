@@ -1,12 +1,10 @@
 package com.github.applejuiceyy.automa.client.lua.boundary;
 
 import com.github.applejuiceyy.automa.client.lua.api.Wrapper;
-import com.github.applejuiceyy.automa.client.lua.api.world.BlockStateWrap;
-import com.github.applejuiceyy.automa.client.lua.api.world.BlockWrap;
-import com.github.applejuiceyy.automa.client.lua.api.world.ItemStackWrap;
-import com.github.applejuiceyy.automa.client.lua.api.world.ItemWrap;
+import com.github.applejuiceyy.automa.client.lua.api.world.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -22,6 +20,7 @@ public class LuaWrappingHelper {
         this.put(BlockState.class, BlockStateWrap.class);
         this.put(ItemStack.class, ItemStackWrap.class);
         this.put(Item.class, ItemWrap.class);
+        this.put(Enchantment.class, EnchantmentWrap.class);
     }};
 
     static Object ensureWrapped(Object obj) {

@@ -7,7 +7,9 @@ import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
+import org.luaj.vm2.LuaError;
 
+import static com.github.applejuiceyy.automa.client.lua.api.Getter.getClient;
 import static com.github.applejuiceyy.automa.client.lua.api.Getter.getPlayer;
 
 @LuaConvertible
@@ -46,6 +48,14 @@ public class AutomatedScreenHandler<T extends ScreenHandler> {
 
     @LuaConvertible
     public record DynamicSlotReference(Inventory inventory, int slot) {
+        public DynamicSlotReference(Inventory inventory, int slot) {
+            this.inventory = inventory;
+            this.slot = slot;
+
+            if (slot < 0 || slot >= inventory.size()) {
+                throw new LuaError("position is outside the bounds of inventory");
+            }
+        }
         @LuaConvertible
         public ItemStack get() {
             return inventory.getStack(slot);
