@@ -1,6 +1,6 @@
 package com.github.applejuiceyy.automa.client.lua.api.listener;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import org.luaj.vm2.LuaValue;
 
@@ -11,7 +11,7 @@ public class Future<T> extends Listener {
     T value = null;
     boolean complete;
 
-    public Future(LuaExecutionFacade owner) {
+    public Future(LuaExecution owner) {
         super(owner);
     }
     @LuaConvertible
@@ -43,7 +43,7 @@ public class Future<T> extends Listener {
     }
 
     // called with reflection
-    static <T> Supplier<Future<T>> getInstanceFactory(LuaExecutionFacade owner) {
+    static <T> Supplier<Future<T>> getInstanceFactory(LuaExecution owner) {
         return () -> new Future<>(owner);
     }
     public static class FutureAlreadyCompletedException extends RuntimeException {}

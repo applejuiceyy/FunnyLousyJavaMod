@@ -1,6 +1,6 @@
 package com.github.applejuiceyy.automa.client.lua.api.listener;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
@@ -11,12 +11,12 @@ import java.util.LinkedHashMap;
 
 @LuaConvertible
 public class Listener {
-    protected final LuaExecutionFacade owner;
+    protected final LuaExecution owner;
 
     private final LinkedHashMap<Integer, LuaValue> subscribers;
     private int next = 0;
 
-    Listener(LuaExecutionFacade owner) {
+    Listener(LuaExecution owner) {
         this.owner = owner;
         subscribers = new LinkedHashMap<>();
     }
@@ -42,7 +42,7 @@ public class Listener {
     }
 
     @LuaConvertible
-    protected void fire(Varargs var) {
+    public void fire(Varargs var) {
         for (LuaValue sub: subscribers.values().stream().toList()) {
             owner.manageCoroutine(owner.createCoroutine(new ZeroArgFunction() {
                 @Override

@@ -1,11 +1,13 @@
-package com.github.applejuiceyy.automa.client.lua.api.world;
+package com.github.applejuiceyy.automa.client.lua.api.wrappers;
 
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
+import com.github.applejuiceyy.automa.client.lua.annotation.Property;
 import com.github.applejuiceyy.automa.client.lua.api.Wrapper;
 import net.fabricmc.fabric.api.mininglevel.v1.MiningLevelManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.registry.Registry;
+import org.joml.Vector3f;
 
 @LuaConvertible
 public record BlockStateWrap(BlockState blockState) implements Wrapper<BlockState> {

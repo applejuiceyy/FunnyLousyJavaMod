@@ -1,20 +1,27 @@
 package com.github.applejuiceyy.automa.client.lua.boundary;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.DynamicSlotAction;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.DynamicSlotReference;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.InventoryAccess;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
+import com.github.applejuiceyy.automa.client.lua.annotation.Metatable;
+import com.github.applejuiceyy.automa.client.lua.annotation.Property;
 import com.github.applejuiceyy.automa.client.lua.api.Player;
 import com.github.applejuiceyy.automa.client.lua.api.ScreenAPI;
+import com.github.applejuiceyy.automa.client.lua.api.World;
 import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.controls.lookControls.LookControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.controls.movementControls.MovementControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.listener.CancellationState;
 import com.github.applejuiceyy.automa.client.lua.api.listener.Event;
 import com.github.applejuiceyy.automa.client.lua.api.listener.Future;
-import com.github.applejuiceyy.automa.client.lua.api.world.*;
+import com.github.applejuiceyy.automa.client.lua.api.wrappers.*;
 import com.github.applejuiceyy.automa.client.lua.entrypoint.AutomationEntrypoint;
 import com.github.applejuiceyy.automa.client.automatedscreenhandler.*;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
+import org.jetbrains.annotations.Contract;
 import org.luaj.vm2.*;
 import org.luaj.vm2.lib.VarArgFunction;
 
@@ -26,7 +33,7 @@ import static com.github.applejuiceyy.automa.client.lua.boundary.LuaWrappingHelp
 
 public class LuaBoundaryControl {
     private final HashMap<Class<?>, LuaTable> cache = new HashMap<>();
-    private final LuaExecutionFacade owner;
+    private final LuaExecution owner;
 
     static Class<?>[] loadClasses = {
             Event.class,
@@ -37,6 +44,7 @@ public class LuaBoundaryControl {
             LookControlsLA.class,
 
             ScreenAPI.class,
+            AutomatedPlayerScreen.class,
             AutomatedAnvil.class,
             AutomatedBeacon.class,
             AutomatedBrewingStand.class,
@@ -49,8 +57,9 @@ public class LuaBoundaryControl {
             Generic2ItemMerger.class,
 
             AutomatedScreenHandler.class,
-            AutomatedScreenHandler.DynamicSlotReference.class,
-            AutomatedScreenHandler.DynamicSlotAction.class,
+            DynamicSlotReference.class,
+            DynamicSlotAction.class,
+            InventoryAccess.class,
 
             CancellationState.class,
 
@@ -61,10 +70,11 @@ public class LuaBoundaryControl {
             BlockWrap.class,
             BlockStateWrap.class,
             ItemWrap.class,
-            EnchantmentWrap.class
+            EnchantmentWrap.class,
+            Vector3fWrap.class
     };
 
-    public LuaBoundaryControl(LuaExecutionFacade owner) {
+    public LuaBoundaryControl(LuaExecution owner) {
         this.owner = owner;
     }
 
@@ -81,43 +91,42 @@ public class LuaBoundaryControl {
         }
     }
 
+
     public LuaTable buildClass(Class<?> cls) {
         if (cache.containsKey(cls)) {
             return cache.get(cls);
         }
 
-        LuaTable indexing = new LuaTable();
+
         LuaTable metatable = new LuaTable();
 
-        LuaValue constructor = new VarArgFunction() {
-            @Override
-            public Varargs invoke(Varargs args) {
-                Object[] converted = LVarargs2J(args);
-
-                Constructor<?> constructor;
-
-                try {
-                    constructor = cls.getConstructor((Class<?>[]) Arrays.stream(converted).map(Object::getClass).toArray());
-                } catch (NoSuchMethodException e) {
-                    throw new LuaError("Unknown constructor");
-                }
-
-                Object instance;
-                try {
-                    instance = constructor.newInstance(converted);
-                } catch (Exception e) {
-                    // TODO: more constructive error
-                    throw new LuaError("Something happened while creating instance");
-                }
-
-                return J2L(instance);
-            }
-        };
-
         HashMap<String, ArrayList<Method>> methods = new HashMap<>();
+        HashMap<String, Method> getters = new HashMap<>();
+        HashMap<String, Method> setters = new HashMap<>();
 
         for(Method method: cls.getDeclaredMethods()) {
-            if(method.isAnnotationPresent(LuaConvertible.class) && Modifier.isPublic(method.getModifiers())) {
+            if (method.isAnnotationPresent(Property.class)) {
+                assertPublic(method, "Method with Property must be public");
+
+                getters.put(method.getName(), method);
+            }
+            else if (method.isAnnotationPresent(Property.Setter.class)) {
+                assertPublic(method, "Method %s from %s with Property Setter must be public");
+
+                setters.put(method.getName(), method);
+            }
+            else if (method.isAnnotationPresent(Metatable.class)) {
+                assertPublic(method, "Method %s from %s with Metatable must be public");
+
+                if(Modifier.isStatic(method.getModifiers())) {
+                    throw new RuntimeException("Method " + method.getName() + " must not be static");
+                }
+
+                metatable.set(method.getName(), new MethodWrapper(this, new Method[]{method}, false));
+            }
+            else if(method.isAnnotationPresent(LuaConvertible.class)) {
+                assertPublic(method, "Method %s from %s with LuaConvertible must be public");
+
                 String name = method.getName();
 
                 if (!methods.containsKey(name)) {
@@ -139,36 +148,27 @@ public class LuaBoundaryControl {
             }
         }
 
-        for (Map.Entry<String, ArrayList<Method>> entry : methods.entrySet()) {
-            Method[] arr = new Method[entry.getValue().size()];
-            entry.getValue().toArray(arr);
-            boolean isStatic = Modifier.isStatic(arr[0].getModifiers());
-            indexing.set(entry.getKey(), new MethodWrapper(this, arr, isStatic));
-        }
-
-        indexing.set("new", constructor);
-
-        for(Class<?> classes: cls.getDeclaredClasses()) {
-            if (classes.isAnnotationPresent(LuaConvertible.class) && Modifier.isPublic(classes.getModifiers())) {
-                indexing.set(classes.getName(), buildClass(classes));
-            }
-        }
+        PropertyManager properties = PropertyManager.from(this, cls.getSimpleName(), getters, setters, methods);
 
         Class<?> supercls = cls.getSuperclass();
 
         if (supercls != Object.class && supercls != Record.class) {
             if (supercls.isAnnotationPresent(LuaConvertible.class)) {
                 LuaTable supermeta = buildClass(supercls);
-                metatable.setmetatable(supermeta);
-                LuaTable indexMeta = new LuaTable();
-                indexMeta.set("__index", supermeta.get("__index"));
-                indexing.setmetatable(supermeta);
+                for(LuaValue v: supermeta.keys()) {
+                    if (metatable.get(v) == LuaValue.NIL) {
+                        metatable.set(v, supermeta.get(v));
+                    }
+                }
+                metatable.set("__index", properties.getGetter(supermeta));
             } else {
                 throw new RuntimeException("A class annotated with LuaConvertible should inherit a class annotated with LuaConvertible (tested " + supercls.getName() + ")");
             }
         }
-
-        metatable.set("__index", indexing);
+        else {
+            metatable.set("__index", properties.getGetter());
+        }
+        metatable.set("__newindex", properties.getSetter());
 
         cache.put(cls, metatable);
 
@@ -286,5 +286,11 @@ public class LuaBoundaryControl {
         LuaUserdata result = new LuaUserdata(obj);
         result.setmetatable(metatable);
         return result;
+    }
+
+    static void assertPublic(Method method, String message) {
+        if (!Modifier.isPublic(method.getModifiers())) {
+            throw new RuntimeException(String.format(message, method.getName(), method.getDeclaringClass().getName()));
+        }
     }
 }

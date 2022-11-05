@@ -2,12 +2,11 @@ package com.github.applejuiceyy.automa.client;
 
 import com.github.applejuiceyy.automa.client.command.Commands;
 import com.github.applejuiceyy.automa.client.lua.LuaExecutionContainer;
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.api.controls.MissionCritical;
 import com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls.InventoryControls;
 import com.github.applejuiceyy.automa.client.lua.api.controls.lookControls.LookControls;
 import com.github.applejuiceyy.automa.client.lua.api.controls.movementControls.MovementControls;
-import com.github.applejuiceyy.automa.client.lua.api.listener.Future;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,7 +14,6 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import org.slf4j.Logger;
@@ -38,28 +36,27 @@ public class AutomaClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register(Commands::registerCommands);
-        ClientPlayConnectionEvents.DISCONNECT.register((a, b) -> {
-            LuaExecutionContainer.stopExecutor();
-        });
+        ClientPlayConnectionEvents.DISCONNECT.register((a, b) -> LuaExecutionContainer.stopExecutor());
         ClientTickEvents.START_CLIENT_TICK.register((a) -> {
-            LuaExecutionFacade executor = LuaExecutionContainer.getExecutor();
+            LuaExecution executor = LuaExecutionContainer.getExecutor();
             if (executor != null && !a.isPaused()) {
                 executor.tick();
             }
         });
         HudRenderCallback.EVENT.register((matrix, f) -> {
-            LuaExecutionFacade executor = LuaExecutionContainer.getExecutor();
+            LuaExecution executor = LuaExecutionContainer.getExecutor();
             if (executor != null) {
                 MinecraftClient minecraftClient = MinecraftClient.getInstance();
                 TextRenderer renderer = minecraftClient.textRenderer;
-                String text = "Running " + executor.getName();
+                String text = "Running " + executor.getName() + (executor.isRunning() ? "" : " (finished)");
                 float y = minecraftClient.getWindow().getScaledHeight() - renderer.fontHeight;
+                int color = executor.isRunning() ? 0xffffff : 0x996666;
                 renderer.draw(
                         matrix,
                         text,
                         minecraftClient.getWindow().getScaledWidth() - renderer.getWidth(text),
                         y,
-                        0xffffff
+                        color
                 );
 
                 y -= renderer.fontHeight + 10;

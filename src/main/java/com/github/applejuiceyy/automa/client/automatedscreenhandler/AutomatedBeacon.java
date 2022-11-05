@@ -1,7 +1,9 @@
 package com.github.applejuiceyy.automa.client.automatedscreenhandler;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.DynamicSlotReference;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
+import com.github.applejuiceyy.automa.client.lua.annotation.Property;
 import com.github.applejuiceyy.automa.mixin.screenhandler.BeaconScreenHandlerAccessor;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.entity.effect.StatusEffect;
@@ -20,7 +22,7 @@ import static com.github.applejuiceyy.automa.client.lua.api.Getter.getNetworkHan
 
 @LuaConvertible
 public class AutomatedBeacon extends AutomatedScreenHandler<BeaconScreenHandler> {
-    AutomatedBeacon(LuaExecutionFacade executor, ScreenHandler handler) {
+    AutomatedBeacon(LuaExecution executor, ScreenHandler handler) {
         super(executor, (BeaconScreenHandler) handler);
     }
 
@@ -29,9 +31,9 @@ public class AutomatedBeacon extends AutomatedScreenHandler<BeaconScreenHandler>
         return handler.getProperties();
     }
 
-    @LuaConvertible
+    @Property
     public DynamicSlotReference payment() {
-        return new DynamicSlotReference(((BeaconScreenHandlerAccessor) handler).getPayment(), 0);
+        return new DynamicSlotReference(this, ((BeaconScreenHandlerAccessor) handler).getPayment(), 0);
     }
 
     @LuaConvertible

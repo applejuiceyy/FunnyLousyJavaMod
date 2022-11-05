@@ -10,4 +10,6 @@ public class InventoryControls extends MissionCritical {
 
     public boolean usingItem;
     public boolean attackingItem;
+    public int timesUsingItem;
+    public int timesAttackingItem;
 }

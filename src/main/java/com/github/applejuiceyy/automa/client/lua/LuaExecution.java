@@ -8,13 +8,14 @@ import com.github.applejuiceyy.automa.client.lua.api.controls.lookControls.LookC
 import com.github.applejuiceyy.automa.client.lua.api.controls.movementControls.MovementControlsLA;
 import com.github.applejuiceyy.automa.client.lua.api.listener.CancellationState;
 import com.github.applejuiceyy.automa.client.lua.api.listener.Event;
-import com.github.applejuiceyy.automa.client.lua.api.world.World;
+import com.github.applejuiceyy.automa.client.lua.api.World;
 import com.github.applejuiceyy.automa.client.lua.boundary.LuaBoundaryControl;
 import com.github.applejuiceyy.automa.client.lua.entrypoint.AutomationEntrypoint;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import org.joml.Vector3f;
 import org.luaj.vm2.*;
 import org.luaj.vm2.compiler.LuaC;
 import org.luaj.vm2.lib.*;
@@ -32,7 +33,7 @@ import java.util.List;
 
 import static com.github.applejuiceyy.automa.client.lua.api.Getter.getClient;
 
-public class LuaExecutionFacade {
+public class LuaExecution {
 
     public final Globals globals = new Globals();
     public final Path dir;
@@ -54,7 +55,9 @@ public class LuaExecutionFacade {
     public final LuaValue coroutineManager;
     public final LuaValue require = new Require(this);
 
-    public LuaExecutionFacade(Path dir) {
+    private LuaExecutionAttempt currentExecutor;
+
+    public LuaExecution(Path dir) {
         this.dir = dir;
 
         globals.load(new JseBaseLib());
@@ -94,13 +97,20 @@ public class LuaExecutionFacade {
         globals.set("brokeBlock", boundary.J2L(brokeBlock).arg1());
         globals.set("blockPlacing", boundary.J2L(blockPlacing).arg1());
 
-        globals.set("player", boundary.J2L(new Player()).arg1());
 
+        ScreenAPI api;
         globals.set("inventory", boundary.J2L(new InventoryControlsLA(this, AutomaClient.inventoryControls)).arg1());
         globals.set("keyboard", boundary.J2L(new MovementControlsLA(this, AutomaClient.movementControls)).arg1());
         globals.set("mouse", boundary.J2L(new LookControlsLA(this, AutomaClient.lookControls)).arg1());
-        globals.set("screen", boundary.J2L(new ScreenAPI(this)).arg1());
+        globals.set("screen", boundary.J2L(api = new ScreenAPI(this)).arg1());
         globals.set("world", boundary.J2L(new World()).arg1());
+        globals.set("vec", new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs args) {
+                return boundary.J2L(new Vector3f((float) args.checkdouble(1), (float) args.checkdouble(2), (float) args.checkdouble(3)));
+            }
+        });
+        globals.set("player", boundary.J2L(new Player(api)).arg1());
 
         List<EntrypointContainer<AutomationEntrypoint>> entries =
                 FabricLoaderImpl.INSTANCE.getEntrypointContainers("automation", AutomationEntrypoint.class);
@@ -118,6 +128,10 @@ public class LuaExecutionFacade {
 
     public void stop() {
         executing = false;
+    }
+
+    public boolean isRunning() {
+        return executing;
     }
 
     public void tick() {
@@ -165,12 +179,34 @@ public class LuaExecutionFacade {
         return globals.load(content, chunkname);
     }
 
+    public void executeAttempt(Runnable runnable) {
+        if (currentExecutor != null) {
+            throw new RuntimeException("an executor is already running");
+        }
+
+        currentExecutor = new LuaExecutionAttempt(runnable);
+        try {
+            currentExecutor.execute();
+        }
+        finally {
+            currentExecutor = null;
+        }
+    }
+
+    public void executeInMain(Runnable runnable) {
+        if (currentExecutor != null) {
+            currentExecutor.executeInMain(runnable);
+        } else {
+            throw new RuntimeException("Not executing");
+        }
+    }
+
     public boolean wrapCall(Runnable calling, boolean stopExecution) {
         if (!executing) {
             return false;
         }
         try {
-            calling.run();
+            executeAttempt(calling);
             return true;
         }
         catch (Exception err) {

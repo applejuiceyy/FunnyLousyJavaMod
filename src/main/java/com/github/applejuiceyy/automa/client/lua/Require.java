@@ -1,6 +1,5 @@
 package com.github.applejuiceyy.automa.client.lua;
 
-import org.luaj.vm2.Lua;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.OneArgFunction;
@@ -12,11 +11,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public class Require extends OneArgFunction {
-    private final LuaExecutionFacade executor;
+    private final LuaExecution executor;
     private final HashMap<String, LuaValue> cache = new LinkedHashMap<>();
     private final LinkedList<String> requireTrace = new LinkedList<>();
 
-    Require(LuaExecutionFacade executor) {
+    Require(LuaExecution executor) {
         this.executor = executor;
     }
 

@@ -1,15 +1,14 @@
 package com.github.applejuiceyy.automa.client.lua.api.controls.movementControls;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import com.github.applejuiceyy.automa.client.lua.api.controls.MissionCriticalLuaInterface;
-import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.ZeroArgFunction;
 
 @LuaConvertible
 public class MovementControlsLA extends MissionCriticalLuaInterface<MovementControls> {
-    public MovementControlsLA(LuaExecutionFacade f, MovementControls obj) {
+    public MovementControlsLA(LuaExecution f, MovementControls obj) {
         super(f, obj);
     }
     @LuaConvertible

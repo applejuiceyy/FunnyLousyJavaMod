@@ -1,61 +1,61 @@
 package com.github.applejuiceyy.automa.client.automatedscreenhandler;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.DynamicSlotAction;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.DynamicSlotReference;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.InventoryAccess;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.IsIndex;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
-import com.github.applejuiceyy.automa.mixin.screenhandler.AbstractFurnaceScreenHandlerAccessor;
+import com.github.applejuiceyy.automa.client.lua.annotation.Property;
 import com.github.applejuiceyy.automa.mixin.screenhandler.BrewingStandScreenHandlerAccessor;
-import net.minecraft.network.packet.c2s.play.RenameItemC2SPacket;
 import net.minecraft.screen.BrewingStandScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 
-import static com.github.applejuiceyy.automa.client.lua.api.Getter.getPlayer;
-
 @LuaConvertible
 public class AutomatedBrewingStand extends AutomatedScreenHandler<BrewingStandScreenHandler> {
-    AutomatedBrewingStand(LuaExecutionFacade executor, ScreenHandler handler) {
+    AutomatedBrewingStand(LuaExecution executor, ScreenHandler handler) {
         super(executor, (BrewingStandScreenHandler) handler);
     }
 
-    @LuaConvertible
+    @Property
     public DynamicSlotReference left() {
-        return new DynamicSlotReference(((BrewingStandScreenHandlerAccessor) handler).getInventory(), 0);
+        return new DynamicSlotReference(this, ((BrewingStandScreenHandlerAccessor) handler).getInventory(), 0);
     }
 
-    @LuaConvertible
+    @Property
     public DynamicSlotReference center() {
-        return new DynamicSlotReference(((BrewingStandScreenHandlerAccessor) handler).getInventory(), 1);
+        return new DynamicSlotReference(this, ((BrewingStandScreenHandlerAccessor) handler).getInventory(), 1);
     }
 
-    @LuaConvertible
+    @Property
     public DynamicSlotReference right() {
-        return new DynamicSlotReference(((BrewingStandScreenHandlerAccessor) handler).getInventory(), 2);
+        return new DynamicSlotReference(this, ((BrewingStandScreenHandlerAccessor) handler).getInventory(), 2);
     }
 
 
-    @LuaConvertible
-    public DynamicSlotReference potion(@IsIndex int pos) {
-        return new DynamicSlotReference(((BrewingStandScreenHandlerAccessor) handler).getInventory(), pos);
+    @Property
+    public InventoryAccess potion() {
+        return new InventoryAccess(this, ((BrewingStandScreenHandlerAccessor) handler).getInventory());
     }
 
-    @LuaConvertible
+    @Property
     public DynamicSlotReference ingredient() {
-        return new DynamicSlotReference(((BrewingStandScreenHandlerAccessor) handler).getInventory(), 3);
+        return new DynamicSlotReference(this, ((BrewingStandScreenHandlerAccessor) handler).getInventory(), 3);
     }
 
-    @LuaConvertible
+    @Property
     public DynamicSlotReference fuel() {
-        return new DynamicSlotReference(((BrewingStandScreenHandlerAccessor) handler).getInventory(), 4);
+        return new DynamicSlotReference(this, ((BrewingStandScreenHandlerAccessor) handler).getInventory(), 4);
     }
 
 
     @LuaConvertible
     public float brewingPercentage() {
-        return handler.getBrewTime() / 20f;
+        return 1 - handler.getBrewTime() / 400f;
     }
 
     @LuaConvertible
     public float fuelPercentage() {
-        return (400 - handler.getBrewTime()) / 400f;
+        return handler.getFuel() / 20f;
     }
 }

@@ -1,6 +1,6 @@
 package com.github.applejuiceyy.automa.client.lua.api;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import com.github.applejuiceyy.automa.client.automatedscreenhandler.AutomatedScreenHandler;
 import com.github.applejuiceyy.automa.client.automatedscreenhandler.AutomatedScreenHandlers;
@@ -12,11 +12,11 @@ import static com.github.applejuiceyy.automa.client.lua.api.Getter.getPlayer;
 
 @LuaConvertible
 public class ScreenAPI {
-    LuaExecutionFacade executor;
+    LuaExecution executor;
     AutomatedScreenHandler<?> handler = null;
     ScreenHandler cache = null;
 
-    public ScreenAPI(LuaExecutionFacade executor) {
+    public ScreenAPI(LuaExecution executor) {
         this.executor = executor;
     }
     @LuaConvertible
@@ -32,6 +32,8 @@ public class ScreenAPI {
         // instead of being set to the always-active playerScreenHandler
         // we actually want to check if there's a screenHandler opened instead of a cop-out,
         // so we treat playerScreenHandler as the null empty value
+
+        // beware that getAutomatedHandledScreen can still return playerScreenHandler
         return getPlayer().currentScreenHandler != getPlayer().playerScreenHandler;
     }
     @LuaConvertible
@@ -57,11 +59,9 @@ public class ScreenAPI {
         cache = player.currentScreenHandler;
         handler = null;
 
-        if (isHandledScreenOpen()) {
-            if (AutomatedScreenHandlers.map.containsKey(player.currentScreenHandler.getClass())) {
-                handler = AutomatedScreenHandlers.map.get(player.currentScreenHandler.getClass())
-                        .create(executor, player.currentScreenHandler);
-            }
+        if (AutomatedScreenHandlers.map.containsKey(player.currentScreenHandler.getClass())) {
+            handler = AutomatedScreenHandlers.map.get(player.currentScreenHandler.getClass())
+                    .create(executor, player.currentScreenHandler);
         }
     }
 }

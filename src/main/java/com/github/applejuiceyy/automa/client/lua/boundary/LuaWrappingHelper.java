@@ -1,12 +1,13 @@
 package com.github.applejuiceyy.automa.client.lua.boundary;
 
 import com.github.applejuiceyy.automa.client.lua.api.Wrapper;
-import com.github.applejuiceyy.automa.client.lua.api.world.*;
+import com.github.applejuiceyy.automa.client.lua.api.wrappers.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import org.joml.Vector3f;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -21,6 +22,7 @@ public class LuaWrappingHelper {
         this.put(ItemStack.class, ItemStackWrap.class);
         this.put(Item.class, ItemWrap.class);
         this.put(Enchantment.class, EnchantmentWrap.class);
+        this.put(Vector3f.class, Vector3fWrap.class);
     }};
 
     static Object ensureWrapped(Object obj) {

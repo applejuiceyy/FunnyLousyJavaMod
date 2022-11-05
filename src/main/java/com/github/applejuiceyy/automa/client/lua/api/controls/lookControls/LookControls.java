@@ -13,9 +13,6 @@ public class LookControls extends MissionCritical {
         setYaw(yaw);
     }
 
-
-
-
     public void setPitch(double pitch) {
         getPlayer().setPitch((float) MathHelper.clamp(pitch, -90.0f, 90.0f));
     }

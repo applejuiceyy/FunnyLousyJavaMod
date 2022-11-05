@@ -1,23 +1,21 @@
 package com.github.applejuiceyy.automa.client.lua.api.controls;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import com.github.applejuiceyy.automa.client.lua.api.listener.Future;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.OneArgFunction;
-import org.luaj.vm2.lib.VarArgFunction;
 import org.luaj.vm2.lib.ZeroArgFunction;
 
 @LuaConvertible
 public abstract class MissionCriticalLuaInterface<V extends MissionCritical> {
     protected final V owner;
-    protected final LuaExecutionFacade execution;
+    protected final LuaExecution execution;
 
     MissionCritical.MissionCriticalRevoker revoker;
 
-    public MissionCriticalLuaInterface(LuaExecutionFacade f, V obj) {
+    public MissionCriticalLuaInterface(LuaExecution f, V obj) {
         owner = obj;
         execution = f;
     }

@@ -12,7 +12,9 @@ public class Print extends VarArgFunction {
     @Override
     public Varargs invoke(Varargs args) {
         if (getClient().player != null) {
-            getClient().player.sendMessage(Text.literal("[Automa] ").setStyle(Style.EMPTY.withColor(0xff4400)).append(Text.of(args.toString())));
+            getClient().player.sendMessage(Text.empty()
+                            .append(Text.literal("[Automa] ").setStyle(Style.EMPTY.withColor(0xff4400)))
+                    .append(Text.of(args.toString())));
         }
         else {
             System.out.println(args.toString());

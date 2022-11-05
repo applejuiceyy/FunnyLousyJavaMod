@@ -39,13 +39,16 @@ public class ParameterTree {
 
             if (method.isAnnotationPresent(IsIndex.class)) {
                 if (traversion.result instanceof Integer integer) {
+                    if (integer == -1) {
+                        return integer;
+                    }
                     return integer + 1;
                 }
                 else {
                     throw new RuntimeException("parameter is annotated with IsIndex yet doesn't return an integer");
                 }
             }
-            return transversing.get().result;
+            return traversion.result;
         } else {
             throw new LuaError("Invalid Overload");
         }
@@ -83,6 +86,7 @@ public class ParameterTree {
         for (Map.Entry<String, List<ParameterTree>> entry : nodes.entrySet()) {
             LuaValue value = vars.arg(position + 1);
             String name = entry.getKey();
+
             Object arg = switch (name) {
                 case "java.lang.Number", "java.lang.Double", "double" -> value.isnumber() ? value.checkdouble() : null;
                 case "java.lang.String" -> value.isstring() ? value.checkjstring() : null;
@@ -94,6 +98,9 @@ public class ParameterTree {
                 case "org.luaj.vm2.LuaFunction" -> value.isfunction() ? value.checkfunction() : null;
                 case "org.luaj.vm2.LuaValue" -> value;
                 default -> {
+                    if (!value.isuserdata()) {
+                        yield null;
+                    }
                     Object val = value.checkuserdata();
                     if(isStatic || position > 0) {
                         val = ensureUnwrapped(val);
@@ -117,6 +124,9 @@ public class ParameterTree {
                         assert annotation != null;
                         if (Arrays.stream(annotation).anyMatch(IsIndex.class::isInstance)) {
                             if (arg instanceof Integer integer) {
+                                if (integer == -1) {
+                                    return integer;
+                                }
                                 return integer - 1;
                             }
                             else {

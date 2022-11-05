@@ -1,8 +1,11 @@
 package com.github.applejuiceyy.automa.client.automatedscreenhandler;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.DynamicSlotReference;
+import com.github.applejuiceyy.automa.client.automatedscreenhandler.inventory.InventoryAccess;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.IsIndex;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
+import com.github.applejuiceyy.automa.client.lua.annotation.Property;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.screen.ScreenHandler;
 
@@ -12,7 +15,7 @@ public class AutomatedGeneric extends AutomatedScreenHandler<ScreenHandler> {
     private final int columns;
     private final Inventory handlerInventory;
 
-    AutomatedGeneric(LuaExecutionFacade executor, ScreenHandler handler, int rows, int columns, Inventory handlerInventory) {
+    AutomatedGeneric(LuaExecution executor, ScreenHandler handler, int rows, int columns, Inventory handlerInventory) {
         super(executor, handler);
         this.rows = rows;
         this.columns = columns;
@@ -24,8 +27,9 @@ public class AutomatedGeneric extends AutomatedScreenHandler<ScreenHandler> {
     }
     @LuaConvertible
     public int getColumns() { return columns; }
-    @LuaConvertible
-    public DynamicSlotReference block(@IsIndex int slot) {
-        return new DynamicSlotReference(handlerInventory, slot);
+
+    @Property
+    public InventoryAccess block() {
+        return new InventoryAccess(this, handlerInventory);
     }
 }

@@ -1,13 +1,10 @@
 package com.github.applejuiceyy.automa.mixin;
 
 import com.github.applejuiceyy.automa.client.lua.LuaExecutionContainer;
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,7 +18,7 @@ public class BlockItemMixin {
             return;
         }
 
-        LuaExecutionFacade c;
+        LuaExecution c;
         if ((c = LuaExecutionContainer.getExecutor()) != null) {
             if (c.performEvent(c.blockPlacing)) {
                 cir.setReturnValue(false);

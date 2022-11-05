@@ -1,20 +1,23 @@
 package com.github.applejuiceyy.automa.client.lua.api.controls.inventoryControls;
 
 import com.github.applejuiceyy.automa.client.InventoryScreenHelper;
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import com.github.applejuiceyy.automa.client.lua.api.controls.MissionCriticalLuaInterface;
-import com.github.applejuiceyy.automa.client.lua.api.world.ItemStackWrap;
+import com.github.applejuiceyy.automa.client.lua.api.wrappers.ItemStackWrap;
+import com.github.applejuiceyy.automa.mixin.acessors.ClientPlayerInteractionManagerAccessor;
 import net.minecraft.item.ItemStack;
 
+import static com.github.applejuiceyy.automa.client.lua.api.Getter.getInteractionManager;
 import static com.github.applejuiceyy.automa.client.lua.api.Getter.getPlayer;
 
 @LuaConvertible
 public class InventoryControlsLA extends MissionCriticalLuaInterface<InventoryControls> {
-    public InventoryControlsLA(LuaExecutionFacade f, InventoryControls obj) { super(f, obj); }
+    public InventoryControlsLA(LuaExecution f, InventoryControls obj) { super(f, obj); }
     @LuaConvertible
     public void useItem() {
         this.owner.usingItem = true;
+        this.owner.timesUsingItem += 1;
     }
     @LuaConvertible
     public void stopUsingItem() {
@@ -23,6 +26,7 @@ public class InventoryControlsLA extends MissionCriticalLuaInterface<InventoryCo
     @LuaConvertible
     public void attackItem() {
         this.owner.attackingItem = true;
+        this.owner.timesAttackingItem += 1;
     }
     @LuaConvertible
     public void stopAttackingItem() {
@@ -43,6 +47,7 @@ public class InventoryControlsLA extends MissionCriticalLuaInterface<InventoryCo
     @LuaConvertible
     public void dropSelectedStack() {
         checkControl();
+        ((ClientPlayerInteractionManagerAccessor) getInteractionManager()).invokeSyncSelectedSlot();
         getPlayer().dropSelectedItem(false);
     }
     @LuaConvertible

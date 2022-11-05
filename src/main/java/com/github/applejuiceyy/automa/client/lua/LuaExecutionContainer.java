@@ -4,9 +4,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class LuaExecutionContainer {
     @Nullable
-    static LuaExecutionFacade currentExecutor = null;
+    static LuaExecution currentExecutor = null;
 
-    public static void setExecutor(LuaExecutionFacade executor) {
+    public static void setExecutor(LuaExecution executor) {
         ensureStopped();
         currentExecutor = executor;
     }
@@ -22,7 +22,7 @@ public class LuaExecutionContainer {
         setExecutor(null);
     }
 
-    public static LuaExecutionFacade getExecutor() {
+    public static LuaExecution getExecutor() {
         return currentExecutor;
     }
 

@@ -1,16 +1,11 @@
 package com.github.applejuiceyy.automa.mixin;
 
 import com.github.applejuiceyy.automa.client.AutomaClient;
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionContainer;
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.input.KeyboardInput;
-import net.minecraft.item.ItemPlacementContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(KeyboardInput.class)
 public class KeyboardInputMixin {

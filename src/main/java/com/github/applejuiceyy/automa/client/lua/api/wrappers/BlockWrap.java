@@ -1,4 +1,4 @@
-package com.github.applejuiceyy.automa.client.lua.api.world;
+package com.github.applejuiceyy.automa.client.lua.api.wrappers;
 
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import com.github.applejuiceyy.automa.client.lua.api.Wrapper;

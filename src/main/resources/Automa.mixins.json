@@ -12,6 +12,7 @@
     "screenhandler.EnchantmentScreenHandlerAccessor",
     "screenhandler.GrindstoneScreenHandlerAccessor",
     "screenhandler.HopperScreenHandlerAccessor",
+    "screenhandler.PlayerScreenHandlerAccessor",
     "screenhandler.ShulkerBoxScreenHandlerAccessor"
   ],
   "client": [
@@ -23,6 +24,7 @@
     "MinecraftClientMixin",
     "MouseMixin",
     "acessors.ClientPlayerEntityAccessor",
+    "acessors.ClientPlayerInteractionManagerAccessor",
     "acessors.KeyBindAccessor",
     "acessors.SlotAccessor",
     "screenhandler.ForgingScreenHandlerAccessor",

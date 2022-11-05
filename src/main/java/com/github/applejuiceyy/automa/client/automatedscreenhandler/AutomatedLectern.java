@@ -1,6 +1,6 @@
 package com.github.applejuiceyy.automa.client.automatedscreenhandler;
 
-import com.github.applejuiceyy.automa.client.lua.LuaExecutionFacade;
+import com.github.applejuiceyy.automa.client.lua.LuaExecution;
 import com.github.applejuiceyy.automa.client.lua.annotation.IsIndex;
 import com.github.applejuiceyy.automa.client.lua.annotation.LuaConvertible;
 import net.minecraft.screen.LecternScreenHandler;
@@ -10,7 +10,7 @@ import static com.github.applejuiceyy.automa.client.lua.api.Getter.getInteractio
 
 @LuaConvertible
 public class AutomatedLectern extends AutomatedScreenHandler<LecternScreenHandler>{
-    public AutomatedLectern(LuaExecutionFacade executor, ScreenHandler handler) {
+    public AutomatedLectern(LuaExecution executor, ScreenHandler handler) {
         super(executor, (LecternScreenHandler) handler);
     }
     @LuaConvertible
